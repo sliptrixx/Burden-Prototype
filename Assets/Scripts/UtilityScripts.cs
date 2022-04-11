@@ -16,4 +16,9 @@ public static class Extensions
 	{
 		return ((toMax - toMin) * ((value - fromMin) / (fromMax - fromMin))) + toMin;
 	}
+
+	public static Vector3 Down(this Transform value)
+	{
+		return -value.up;
+	}
 }

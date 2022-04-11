@@ -48,8 +48,8 @@ public class Symbiote : MonoBehaviour
 		// get a reference to the child object
 		child = transform.GetChild(0).transform;
 
-		// get the default scale of the symbiote on the x-axis
-		defaultScale = transform.localScale.x;
+		// get the default scale of the symbiote on the y-axis
+		defaultScale = transform.localScale.y;
 
 		// get the renderer from the children
 		rend = GetComponentInChildren<MeshRenderer>();
@@ -83,7 +83,7 @@ public class Symbiote : MonoBehaviour
 		if(status == Status.PROJECTILE)
 		{
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
-			transform.position += transform.right * deltaDistance;
+			transform.position += deltaDistance * -transform.up;
 			projectileDistance -= deltaDistance;
 
 			if(projectileDistance <= 0)
@@ -99,10 +99,10 @@ public class Symbiote : MonoBehaviour
 		{
 			// scale down to 0 by the given time
 			Vector3 scale = transform.localScale;
-			scale.x -= Time.deltaTime * ShrinkSpeed;
+			scale.y -= Time.deltaTime * ShrinkSpeed;
 			transform.localScale = scale;
 
-			if (scale.x <= defaultScale)
+			if (scale.y <= defaultScale)
 			{
 				status = Status.PROJECTILE;
 				projectileDistance = Vector3.Distance(transform.position, player.position);
@@ -142,7 +142,7 @@ public class Symbiote : MonoBehaviour
 	{
 		float stretch = dist.Remap(AttractionRadius, TouchRadius, 1, TouchRadius);
 		Vector3 size = transform.localScale;
-		size.x = stretch;
+		size.y = stretch;
 		transform.localScale = size;
 	}
 
@@ -151,7 +151,7 @@ public class Symbiote : MonoBehaviour
 	{
 		float rot = Extensions.Angle(transform.position, player.position);
 		Vector3 rot_vec = transform.eulerAngles;
-		rot_vec.z = rot;
+		rot_vec.z = rot + 90;
 		transform.eulerAngles = rot_vec;
 	}
 
@@ -160,12 +160,12 @@ public class Symbiote : MonoBehaviour
 	{
 		// move the pivot to be right aligned
 		Vector3 childPos = child.localPosition;
-		childPos.x = -childPos.x;
+		childPos.y = -childPos.y;
 		child.localPosition = childPos;
 
 		// not only child position has to be changed, the main position
 		// has to be changed as well
-		transform.position += transform.right * transform.localScale.x;
+		transform.position += -transform.up * transform.localScale.x;
 	}
 
 	public void SetColor(Color color)

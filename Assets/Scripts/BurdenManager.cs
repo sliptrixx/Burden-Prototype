@@ -30,7 +30,7 @@ public class BurdenManager : MonoBehaviour
 
 	public void SwapBurdenType(MovePlayer.PlayerType playerType)
 	{
-		Color colorToChange = default;
+		Color colorToChange;
 		if (playerType == MovePlayer.PlayerType.LIGHT)
 		{
 			colorToChange = DarkColor;
