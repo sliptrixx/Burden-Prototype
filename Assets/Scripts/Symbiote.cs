@@ -111,14 +111,14 @@ public class Symbiote : MonoBehaviour
 			if (scale.y <= defaultScale)
 			{
 				status = Status.PROJECTILE;
-				projectileDistance = Vector3.Distance(transform.position, player.position);
+				projectileDistance = GetDistanceFromPlayer();
 			}
 
 			return;
 		}
 
 		// check if the symbiote is attracted to the player
-		float dist = Vector3.Distance(transform.position, player.position);
+		float dist = GetDistanceFromPlayer();
 
 		// update the status based on the distance
 		if(dist <= AttractionRadius) { status = Status.ATTRACTED; }
@@ -160,6 +160,13 @@ public class Symbiote : MonoBehaviour
 		Vector3 rot_vec = transform.eulerAngles;
 		rot_vec.z = rot + 90;
 		transform.eulerAngles = rot_vec;
+	}
+
+	// Get the shortest distance from the player
+	private float GetDistanceFromPlayer()
+	{
+		Vector3 tip = transform.position + (transform.localScale.y * child.localScale.y * -transform.up);
+		return Vector3.Distance(tip, player.position);
 	}
 
 	// Change the pivot to be right alligned
