@@ -34,6 +34,9 @@ public class Symbiote : MonoBehaviour
 	// the default scale of the object on the x-axis
 	float defaultScale = 1.0f;
 
+	// the area of the symbiote
+	float area = 1.0f;
+
 	// how far the projectile should travel
 	float projectileDistance = 0.0f;
 
@@ -50,6 +53,9 @@ public class Symbiote : MonoBehaviour
 
 		// get the default scale of the symbiote on the y-axis
 		defaultScale = transform.localScale.y;
+
+		// calculate the area
+		area = transform.localScale.x * transform.localScale.y;
 
 		// get the renderer from the children
 		rend = GetComponentInChildren<MeshRenderer>();
@@ -142,6 +148,7 @@ public class Symbiote : MonoBehaviour
 	{
 		float stretch = dist.Remap(AttractionRadius, TouchRadius, 1, TouchRadius);
 		Vector3 size = transform.localScale;
+		size.x = area / stretch;
 		size.y = stretch;
 		transform.localScale = size;
 	}
@@ -160,6 +167,7 @@ public class Symbiote : MonoBehaviour
 	{
 		// move the pivot to be right aligned
 		Vector3 childPos = child.localPosition;
+		childPos.x = -childPos.x;
 		childPos.y = -childPos.y;
 		child.localPosition = childPos;
 
