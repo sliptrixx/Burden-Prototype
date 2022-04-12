@@ -180,12 +180,24 @@ public class Symbiote : MonoBehaviour
 
 		// not only child position has to be changed, the main position
 		// has to be changed as well
-		transform.position += -transform.up * transform.localScale.x;
+		transform.position -= transform.up * (child.localScale.y * 2);
 	}
 
+	// set the color of the symbiote
 	public void SetColor(Color color)
 	{
 		rend.material.SetColor("_Color", color);
+	}
+
+	// fixes the pivots of the children
+	public void FixChildrenPivot()
+	{
+		foreach(Transform child in transform)
+		{
+			Vector3 pos = child.localPosition;
+			pos.y = -child.localScale.y / 2.0f;
+			child.localPosition = pos;
+		}
 	}
 
 	// The status of the symbiote
@@ -198,3 +210,27 @@ public class Symbiote : MonoBehaviour
 		DONE
 	}
 }
+
+#if UNITY_EDITOR
+
+// Custom editor to fix the pivots on scaling
+[UnityEditor.CanEditMultipleObjects]
+[UnityEditor.CustomEditor(typeof(Symbiote))]
+public class SymbioteEditor : UnityEditor.Editor
+{
+	public override void OnInspectorGUI()
+	{
+		// draw the default editor first
+		DrawDefaultInspector();
+		GUILayout.Space(10);
+
+		// draw a button that fixes the pivots of the child object
+		if(GUILayout.Button("Fix children pivots", GUILayout.Height(25)))
+		{
+			Symbiote symbiote = target as Symbiote;
+			symbiote.FixChildrenPivot();
+		}
+	}
+}
+
+#endif

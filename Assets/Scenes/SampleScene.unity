@@ -539,7 +539,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 504023566}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.61, y: -4.09, z: 0}
+  m_LocalPosition: {x: -1.27, y: -10.67, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -664,8 +664,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 855112602}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.375, y: -0.375, z: 0}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_LocalPosition: {x: 0, y: -1.25, z: 0}
+  m_LocalScale: {x: 0.75, y: 2.5, z: 0.75}
   m_Children: []
   m_Father: {fileID: 1942215331}
   m_RootOrder: 0
@@ -745,8 +745,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 921687031}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.375, y: -0.375, z: 0}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_LocalPosition: {x: 0, y: -0.595, z: 0}
+  m_LocalScale: {x: 0.75, y: 1.19, z: 0.75}
   m_Children: []
   m_Father: {fileID: 1182574393}
   m_RootOrder: 0
@@ -1105,8 +1105,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AttractionRadius: 10
-  SnapRadius: 6
-  TouchRadius: 4
+  SnapRadius: 2
+  TouchRadius: 2
   ShrinkSpeed: 40
   ProjectileSpeed: 20
 --- !u!4 &1182574393
@@ -1117,7 +1117,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1182574391}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.56, y: 4.16, z: 0}
+  m_LocalPosition: {x: 5.37, y: 4.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 921687032}
@@ -1576,8 +1576,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AttractionRadius: 10
-  SnapRadius: 6
-  TouchRadius: 4.5
+  SnapRadius: 2
+  TouchRadius: 2
   ShrinkSpeed: 40
   ProjectileSpeed: 20
 --- !u!4 &1942215331
