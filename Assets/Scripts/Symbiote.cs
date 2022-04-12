@@ -76,6 +76,10 @@ public class Symbiote : MonoBehaviour
 	// Called once per frame
 	private void Update()
 	{
+		#if UNITY_EDITOR
+		//DebugDraw();
+		#endif
+
 		// if the update process is done... stop anymore updates
 		if(status == Status.DONE) 
 		{
@@ -111,17 +115,17 @@ public class Symbiote : MonoBehaviour
 			if (scale.y <= defaultScale)
 			{
 				status = Status.PROJECTILE;
-				projectileDistance = GetDistanceFromPlayer();
+				projectileDistance = Vector3.Distance(GetTip(), player.position);
 			}
 
 			return;
 		}
 
 		// check if the symbiote is attracted to the player
-		float dist = GetDistanceFromPlayer();
+		float dist = Vector3.Distance(GetTip(), player.position);
 
 		// update the status based on the distance
-		if(dist <= AttractionRadius) { status = Status.ATTRACTED; }
+		if (dist <= AttractionRadius) { status = Status.ATTRACTED; }
 		else { status = Status.NOT_ATTRACTED; }
 
 		// if the symbiote is attracted, update the transform accordingly
@@ -162,13 +166,6 @@ public class Symbiote : MonoBehaviour
 		transform.eulerAngles = rot_vec;
 	}
 
-	// Get the shortest distance from the player
-	private float GetDistanceFromPlayer()
-	{
-		Vector3 tip = transform.position + (transform.localScale.y * child.localScale.y * -transform.up);
-		return Vector3.Distance(tip, player.position);
-	}
-
 	// Change the pivot to be right alligned
 	private void ChangePivot()
 	{
@@ -181,6 +178,19 @@ public class Symbiote : MonoBehaviour
 		// not only child position has to be changed, the main position
 		// has to be changed as well
 		transform.position -= transform.up * (child.localScale.y * 2);
+	}
+
+	private void DebugDraw()
+	{
+		Vector3 tip = GetTip();
+		Debug.DrawRay(tip, -transform.up * AttractionRadius, Color.green);
+		Debug.DrawRay(tip, -transform.up * SnapRadius,  Color.blue);
+		Debug.DrawRay(tip, -transform.up * TouchRadius, Color.red);
+	}
+
+	private Vector3 GetTip()
+	{
+		return transform.position - (transform.localScale.y * child.localScale.y * transform.up);
 	}
 
 	// set the color of the symbiote
