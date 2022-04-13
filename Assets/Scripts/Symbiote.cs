@@ -44,7 +44,7 @@ public class Symbiote : MonoBehaviour
 	// how far the projectile should travel
 	float projectileDistance = 0.0f;
 
-	MeshRenderer rend;
+	MeshRenderer[] rends;
 
 	// Called once at the start of the frame
 	void Start()
@@ -65,7 +65,7 @@ public class Symbiote : MonoBehaviour
 		area = transform.localScale.x * transform.localScale.y;
 
 		// get the renderer from the children
-		rend = GetComponentInChildren<MeshRenderer>();
+		rends = GetComponentsInChildren<MeshRenderer>();
 
 		// performing a null check in the editor mode and reporting it
 		#if UNITY_EDITOR
@@ -201,7 +201,6 @@ public class Symbiote : MonoBehaviour
 		return GetTip(bottom);
 	}
 
-	
 	// Variant of get tip that gets the tip of a particular transform
 	private Vector3 GetTip(Transform obj)
 	{
@@ -211,7 +210,10 @@ public class Symbiote : MonoBehaviour
 	// set the color of the symbiote
 	public void SetColor(Color color)
 	{
-		rend.material.SetColor("_Color", color);
+		foreach(MeshRenderer rend in rends)
+		{
+			rend.material.SetColor("_Color", color);
+		}
 	}
 
 	// fixes the pivots of the children
