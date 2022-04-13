@@ -83,8 +83,9 @@ public class Symbiote : MonoBehaviour
 	// Called once per frame
 	private void Update()
 	{
+		// ONLY IN EDITOR MODE
 		#if UNITY_EDITOR
-		//DebugDraw();
+		if(isDebugDrawActive) { DebugDraw(); }
 		#endif
 
 		// if the update process is done... stop anymore updates
@@ -235,6 +236,15 @@ public class Symbiote : MonoBehaviour
 		}
 	}
 
+	// EDITOR ONLY FUNCTION to help visualize the internal values of the symbiote
+	#if UNITY_EDITOR
+	bool isDebugDrawActive = false;
+	public void ToggleDebugDraw()
+	{
+		isDebugDrawActive = !isDebugDrawActive;
+	}
+	#endif
+
 	// function that finds the bottom most child
 	private Transform FindBottomMostChild()
 	{
@@ -294,6 +304,13 @@ public class SymbioteEditor : UnityEditor.Editor
 		{
 			Symbiote symbiote = target as Symbiote;
 			symbiote.FixChildrenPivot();
+		}
+
+		GUILayout.Space(5);
+		if(GUILayout.Button("Toggle debug draw", GUILayout.Height(25)))
+		{
+			Symbiote symbiote = target as Symbiote;
+			symbiote.ToggleDebugDraw();
 		}
 	}
 }
