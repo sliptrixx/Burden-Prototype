@@ -183,7 +183,7 @@ public class Symbiote : MonoBehaviour
 		child.localPosition = childPos;
 
 		// not only child position has to be changed, the main position
-		// has to be changed as well
+		// has to be changed as well 
 		transform.position -= transform.up * (child.localScale.y * 2);
 	}
 
@@ -210,6 +210,7 @@ public class Symbiote : MonoBehaviour
 	// set the color of the symbiote
 	public void SetColor(Color color)
 	{
+		// loop through all mesh renderers and set the color
 		foreach(MeshRenderer rend in rends)
 		{
 			rend.material.SetColor("_Color", color);
@@ -219,11 +220,18 @@ public class Symbiote : MonoBehaviour
 	// fixes the pivots of the children
 	public void FixChildrenPivot()
 	{
+		// initialize cache values
+		Transform baseChild = transform.GetChild(0);
+		Vector3 offset = default;
+		
+		// calculate offset
+		float currentY = baseChild.localPosition.y;
+		float expectedY = -baseChild.localScale.y / 2.0f;
+		offset.y = expectedY - currentY;
+
 		foreach(Transform child in transform)
 		{
-			Vector3 pos = child.localPosition;
-			pos.y = -child.localScale.y / 2.0f;
-			child.localPosition = pos;
+			child.localPosition += offset;
 		}
 	}
 
