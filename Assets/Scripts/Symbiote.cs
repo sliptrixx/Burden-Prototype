@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Symbiote : MonoBehaviour
@@ -31,6 +32,9 @@ public class Symbiote : MonoBehaviour
 	// A reference to the child sphere mesh
 	Transform child;
 
+	// A reference to the bottom most child
+	Transform bottom;
+
 	// the default scale of the object on the x-axis
 	float defaultScale = 1.0f;
 
@@ -48,8 +52,11 @@ public class Symbiote : MonoBehaviour
 		// let's assume that the player is the only object with a CursorPlayer component
 		player = FindObjectOfType<MovePlayer>().transform;
 
-		// get a reference to the child object
+		// get a reference to the child 
 		child = transform.GetChild(0).transform;
+		
+		// find the bottom most child
+		bottom = FindBottomMostChild();
 
 		// get the default scale of the symbiote on the y-axis
 		defaultScale = transform.localScale.y;
@@ -188,9 +195,17 @@ public class Symbiote : MonoBehaviour
 		Debug.DrawRay(tip, -transform.up * TouchRadius, Color.red);
 	}
 
+	// Get the tip of the entire object
 	private Vector3 GetTip()
 	{
-		return transform.position - (transform.localScale.y * child.localScale.y * transform.up);
+		return GetTip(bottom);
+	}
+
+	
+	// Variant of get tip that gets the tip of a particular transform
+	private Vector3 GetTip(Transform obj)
+	{
+		return obj.position - (transform.localScale.y * (obj.localScale.y) * transform.up) - child.localPosition;
 	}
 
 	// set the color of the symbiote
@@ -208,6 +223,36 @@ public class Symbiote : MonoBehaviour
 			pos.y = -child.localScale.y / 2.0f;
 			child.localPosition = pos;
 		}
+	}
+
+	// function that finds the bottom most child
+	private Transform FindBottomMostChild()
+	{
+		// initialize the return value
+		Transform ret = null;
+
+		// Get all children transforms and remove self from this list
+		List<Transform> transforms = GetComponentsInChildren<Transform>().ToList();
+		transforms.Remove(transform);
+
+		// if it has at least one, we set the first value as the default
+		// return value
+		if (transforms.Count > 0)
+		{
+			ret = transforms[0];
+		}
+
+		// now loop through the rest of the transforms to find the child transform
+		// with the smallest tip
+		foreach(Transform obj in transforms)
+		{
+			if (GetTip(ret).y > GetTip(obj).y)
+			{
+				ret = obj;
+			}
+		}
+
+		return ret;
 	}
 
 	// The status of the symbiote
