@@ -5,17 +5,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEditor;
 
 public class Symbiote : MonoBehaviour
 {
 	[Tooltip("The symbiote starts moving towards the player if within this radius")]
 	[SerializeField] float AttractionRadius = 5;
 
+	[Tooltip("The maximum size the symbiote will stretch")]
+	[SerializeField] float MaxSize = 2.5f;
+
 	[Tooltip("The radius at which the root snaps to the player")]
 	[SerializeField] float SnapRadius = 3.0f;
-
-	[Tooltip("The radius at which the symbiote touches player")]
-	[SerializeField] float TouchRadius = 2.5f;
 
 	[Tooltip("The speed at which the symbiote shrinks")]
 	[SerializeField] float ShrinkSpeed = 40.0f;
@@ -36,7 +37,7 @@ public class Symbiote : MonoBehaviour
 	Transform bottom;
 
 	// the default scale of the object on the x-axis
-	float defaultScale = 1.0f;
+	float scaleRatio = 1.0f;
 
 	// the area of the symbiote
 	float area = 1.0f;
@@ -58,8 +59,9 @@ public class Symbiote : MonoBehaviour
 		// find the bottom most child
 		bottom = FindBottomMostChild();
 
-		// get the default scale of the symbiote on the y-axis
-		defaultScale = transform.localScale.y;
+		// calculate the default scale and the ratio
+		float defaultScale = Vector3.Distance(transform.position, GetTip());
+		scaleRatio = MaxSize / defaultScale;
 
 		// calculate the area
 		area = transform.localScale.x * transform.localScale.y;
@@ -72,7 +74,7 @@ public class Symbiote : MonoBehaviour
 		if(player == null)
 		{
 			Debug.LogWarning("Player not found in the scene. Exiting play mode.");
-			UnityEditor.EditorApplication.ExitPlaymode();
+			EditorApplication.ExitPlaymode();
 		}
 		#endif
 
@@ -83,11 +85,6 @@ public class Symbiote : MonoBehaviour
 	// Called once per frame
 	private void Update()
 	{
-		// ONLY IN EDITOR MODE
-		#if UNITY_EDITOR
-		if(isDebugDrawActive) { DebugDraw(); }
-		#endif
-
 		// if the update process is done... stop anymore updates
 		if(status == Status.DONE) 
 		{
@@ -120,17 +117,17 @@ public class Symbiote : MonoBehaviour
 			scale.y -= Time.deltaTime * ShrinkSpeed;
 			transform.localScale = scale;
 
-			if (scale.y <= defaultScale)
+			if (scale.y <= 1)
 			{
 				status = Status.PROJECTILE;
-				projectileDistance = Vector3.Distance(GetTip(), player.position);
+				projectileDistance = Vector3.Distance(transform.position, player.position);
 			}
 
 			return;
 		}
 
 		// check if the symbiote is attracted to the player
-		float dist = Vector3.Distance(GetTip(), player.position);
+		float dist = Vector3.Distance(transform.position, player.position);
 
 		// update the status based on the distance
 		if (dist <= AttractionRadius) { status = Status.ATTRACTED; }
@@ -140,6 +137,7 @@ public class Symbiote : MonoBehaviour
 		if(status == Status.ATTRACTED)
 		{
 			// set the scale to the stretch value
+			//float stretch = Vector3.Distance(GetTip(), player.position);
 			StretchTowardsPlayer(dist);
 
 			// set the orientation of the symbiote
@@ -152,13 +150,20 @@ public class Symbiote : MonoBehaviour
 		{
 			status = Status.SNAPPED;
 			ChangePivot();
+
+			/*#if UNITY_EDITOR
+			if(isDebugDrawActive)
+			{
+				Debug.Log($"Scale: {transform.localScale.y} + dist: {dist}");
+			}
+			#endif*/
 		}
 	}
 
 	// Stretch towards the player
 	private void StretchTowardsPlayer(float dist)
 	{
-		float stretch = dist.Remap(AttractionRadius, TouchRadius, 1, TouchRadius);
+		float stretch = dist.Remap(AttractionRadius, SnapRadius, 1, scaleRatio);
 		Vector3 size = transform.localScale;
 		size.x = area / stretch;
 		size.y = stretch;
@@ -188,14 +193,6 @@ public class Symbiote : MonoBehaviour
 		transform.position -= transform.up * (child.localScale.y * 2);
 	}
 
-	private void DebugDraw()
-	{
-		Vector3 tip = GetTip();
-		Debug.DrawRay(tip, -transform.up * AttractionRadius, Color.green);
-		Debug.DrawRay(tip, -transform.up * SnapRadius,  Color.blue);
-		Debug.DrawRay(tip, -transform.up * TouchRadius, Color.red);
-	}
-
 	// Get the tip of the entire object
 	private Vector3 GetTip()
 	{
@@ -205,7 +202,9 @@ public class Symbiote : MonoBehaviour
 	// Variant of get tip that gets the tip of a particular transform
 	private Vector3 GetTip(Transform obj)
 	{
-		return obj.position - (transform.localScale.y * (obj.localScale.y) * transform.up) - child.localPosition;
+		Mesh mesh = obj.GetComponent<MeshFilter>().mesh;
+		float scale = transform.localScale.y * (obj.localScale.y / 2);
+		return obj.position - (scale * mesh.bounds.size.y * transform.up);
 	}
 
 	// set the color of the symbiote
@@ -243,6 +242,31 @@ public class Symbiote : MonoBehaviour
 	{
 		isDebugDrawActive = !isDebugDrawActive;
 	}
+
+	private Vector3 debugTextOffset = new Vector3(1, 0, 0);
+	private void OnDrawGizmos()
+	{
+		if(!isDebugDrawActive) { return; }
+
+		Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
+		Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
+		Debug.DrawRay(transform.position, -transform.up * MaxSize, Color.red);
+		
+		if(player == null) { return; }
+		float playerDist = Vector3.Distance(transform.position, player.position);
+		float scale = Vector3.Distance(transform.position, GetTip());
+
+		Vector3 debugTip = GetTip();
+		Debug.DrawLine(transform.position, GetTip(), Color.magenta);
+		Debug.DrawLine(debugTip - new Vector3(0.25f, 0, 0), debugTip + new Vector3(0.25f, 0, 0), Color.magenta);
+
+		Handles.Label(transform.position + debugTextOffset, 
+			$"Distance From Player: {playerDist}\n" +
+			$"Local Scale: {transform.localScale.y}\n" +
+			$"Ratio: {scaleRatio}\n" +
+			$"Size: {scale}");
+	}
+
 	#endif
 
 	// function that finds the bottom most child
@@ -289,9 +313,9 @@ public class Symbiote : MonoBehaviour
 #if UNITY_EDITOR
 
 // Custom editor to fix the pivots on scaling
-[UnityEditor.CanEditMultipleObjects]
-[UnityEditor.CustomEditor(typeof(Symbiote))]
-public class SymbioteEditor : UnityEditor.Editor
+[CanEditMultipleObjects]
+[CustomEditor(typeof(Symbiote))]
+public class SymbioteEditor : Editor
 {
 	public override void OnInspectorGUI()
 	{
