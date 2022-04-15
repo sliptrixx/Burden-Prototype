@@ -45,6 +45,8 @@ public class Symbiote : MonoBehaviour
 	// how far the projectile should travel
 	float projectileDistance = 0.0f;
 
+	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) playerLOSData;
+
 	MeshRenderer[] rends;
 
 	// Called once at the start of the frame
@@ -55,7 +57,7 @@ public class Symbiote : MonoBehaviour
 
 		// get a reference to the child 
 		child = transform.GetChild(0).transform;
-		
+
 		// find the bottom most child
 		bottom = FindBottomMostChild();
 
@@ -71,7 +73,7 @@ public class Symbiote : MonoBehaviour
 
 		// performing a null check in the editor mode and reporting it
 		#if UNITY_EDITOR
-		if(player == null)
+		if (player == null)
 		{
 			Debug.LogWarning("Player not found in the scene. Exiting play mode.");
 			EditorApplication.ExitPlaymode();
@@ -81,27 +83,27 @@ public class Symbiote : MonoBehaviour
 		// Start with orienting the player... why? due to pivot reasons
 		LookAtPlayer();
 	}
-	
+
 	// Called once per frame
 	private void Update()
 	{
 		// if the update process is done... stop anymore updates
-		if(status == Status.DONE) 
+		if (status == Status.DONE)
 		{
 			player.GetComponent<MovePlayer>().CollectBurden();
 			BurdenManager.Instance.DeleteReference(this);
-			Destroy(gameObject); 
-			return; 
+			Destroy(gameObject);
+			return;
 		}
 
 		// move towards the player as a projectile
-		if(status == Status.PROJECTILE)
+		if (status == Status.PROJECTILE)
 		{
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
 			transform.position += deltaDistance * -transform.up;
 			projectileDistance -= deltaDistance;
 
-			if(projectileDistance <= 0)
+			if (projectileDistance <= 0)
 			{
 				status = Status.DONE;
 			}
@@ -110,11 +112,12 @@ public class Symbiote : MonoBehaviour
 		}
 
 		// the symbiote has snapped, so process that information
-		if(status == Status.SNAPPED)
+		if (status == Status.SNAPPED)
 		{
 			// scale down to 0 by the given time
 			Vector3 scale = transform.localScale;
 			scale.y -= Time.deltaTime * ShrinkSpeed;
+			scale.x = area / scale.y;
 			transform.localScale = scale;
 
 			if (scale.y <= 1)
@@ -128,20 +131,24 @@ public class Symbiote : MonoBehaviour
 
 		// check if the symbiote is attracted to the player
 		float dist = Vector3.Distance(transform.position, player.position);
+		LookAtPlayer();
 
 		// update the status based on the distance
-		if (dist <= AttractionRadius) { status = Status.ATTRACTED; }
-		else { status = Status.NOT_ATTRACTED; }
+		if (dist <= AttractionRadius && playerLOSData.HitPlayer)
+		{
+			status = Status.ATTRACTED;
+		}
+		else 
+		{ 
+			status = Status.NOT_ATTRACTED;
+			return;
+		}
 
 		// if the symbiote is attracted, update the transform accordingly
-		if(status == Status.ATTRACTED)
+		if (status == Status.ATTRACTED)
 		{
 			// set the scale to the stretch value
-			//float stretch = Vector3.Distance(GetTip(), player.position);
 			StretchTowardsPlayer(dist);
-
-			// set the orientation of the symbiote
-			LookAtPlayer();
 		}
 
 		// once the symbiot has touched the player, set a flag that the
@@ -150,14 +157,12 @@ public class Symbiote : MonoBehaviour
 		{
 			status = Status.SNAPPED;
 			ChangePivot();
-
-			/*#if UNITY_EDITOR
-			if(isDebugDrawActive)
-			{
-				Debug.Log($"Scale: {transform.localScale.y} + dist: {dist}");
-			}
-			#endif*/
 		}
+	}
+
+	private void FixedUpdate()
+	{
+		playerLOSData = DirectLOSToPlayer();
 	}
 
 	// Stretch towards the player
@@ -211,7 +216,7 @@ public class Symbiote : MonoBehaviour
 	public void SetColor(Color color)
 	{
 		// loop through all mesh renderers and set the color
-		foreach(MeshRenderer rend in rends)
+		foreach (MeshRenderer rend in rends)
 		{
 			rend.material.SetColor("_Color", color);
 		}
@@ -223,13 +228,13 @@ public class Symbiote : MonoBehaviour
 		// initialize cache values
 		Transform baseChild = transform.GetChild(0);
 		Vector3 offset = default;
-		
+
 		// calculate offset
 		float currentY = baseChild.localPosition.y;
 		float expectedY = -baseChild.localScale.y / 2.0f;
 		offset.y = expectedY - currentY;
 
-		foreach(Transform child in transform)
+		foreach (Transform child in transform)
 		{
 			child.localPosition += offset;
 		}
@@ -243,16 +248,34 @@ public class Symbiote : MonoBehaviour
 		isDebugDrawActive = !isDebugDrawActive;
 	}
 
-	private Vector3 debugTextOffset = new Vector3(1, 0, 0);
+	private Transform hitTransform = null;
+	private Vector3 debugTextOffset = new Vector3(1, -0.5f, 0);
 	private void OnDrawGizmos()
 	{
-		if(!isDebugDrawActive) { return; }
+		if (!isDebugDrawActive) { return; }
 
-		Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
-		Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
-		Debug.DrawRay(transform.position, -transform.up * MaxSize, Color.red);
-		
+		if(!Application.isPlaying)
+		{
+			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
+			Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
+			Debug.DrawRay(transform.position, -transform.up * MaxSize, Color.red);
+
+			return;
+		}
+
 		if(player == null) { return; }
+
+		if(playerLOSData.HitPlayer)
+		{
+			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
+			Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
+			Debug.DrawRay(transform.position, -transform.up * MaxSize, Color.red);
+		}
+		else if(playerLOSData.HitSomething)
+		{
+			Debug.DrawLine(transform.position, playerLOSData.HitPoint, Color.green);
+		}
+
 		float playerDist = Vector3.Distance(transform.position, player.position);
 		float scale = Vector3.Distance(transform.position, GetTip());
 
@@ -260,11 +283,14 @@ public class Symbiote : MonoBehaviour
 		Debug.DrawLine(transform.position, GetTip(), Color.magenta);
 		Debug.DrawLine(debugTip - new Vector3(0.25f, 0, 0), debugTip + new Vector3(0.25f, 0, 0), Color.magenta);
 
-		Handles.Label(transform.position + debugTextOffset, 
+		string hitName = hitTransform == null ? "NULL" : hitTransform.name;
+
+		Handles.Label(transform.position + debugTextOffset,
 			$"Distance From Player: {playerDist}\n" +
 			$"Local Scale: {transform.localScale.y}\n" +
 			$"Ratio: {scaleRatio}\n" +
-			$"Size: {scale}");
+			$"Size: {scale}\n" +
+			$"Object Hit: {hitName}");
 	}
 
 	#endif
@@ -288,7 +314,7 @@ public class Symbiote : MonoBehaviour
 
 		// now loop through the rest of the transforms to find the child transform
 		// with the smallest tip
-		foreach(Transform obj in transforms)
+		foreach (Transform obj in transforms)
 		{
 			if (GetTip(ret).y > GetTip(obj).y)
 			{
@@ -297,6 +323,25 @@ public class Symbiote : MonoBehaviour
 		}
 
 		return ret;
+	}
+
+	// check if there's any other object between the symbiote and the player
+	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) DirectLOSToPlayer()
+	{
+		RaycastHit hit;
+		if(Physics.Raycast(GetTip(), -transform.up, out hit))
+		{
+			hitTransform = hit.transform;
+			if(hit.transform.CompareTag("Player"))
+			{
+				return (true, true, hit.point);
+			}
+
+			return (true, false, hit.point);
+		}
+
+		hitTransform = null;
+		return (false, false, Vector3.zero);
 	}
 
 	// The status of the symbiote
