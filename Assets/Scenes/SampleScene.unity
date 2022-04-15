@@ -141,7 +141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &249297260
 Transform:
   m_ObjectHideFlags: 0
@@ -268,7 +268,7 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 40
+  ShrinkSpeed: 2
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &326936283
@@ -432,7 +432,7 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 40
+  ShrinkSpeed: 2
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &497088233
@@ -695,7 +695,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &593796128
 Transform:
   m_ObjectHideFlags: 0
@@ -1010,7 +1010,7 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 40
+  ShrinkSpeed: 2
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &739811212
@@ -1238,7 +1238,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &953691783
 Transform:
   m_ObjectHideFlags: 0
@@ -1572,7 +1572,7 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 40
+  ShrinkSpeed: 2
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &1162772197
@@ -1752,7 +1752,7 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 40
+  ShrinkSpeed: 2
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &1278651928
@@ -1997,7 +1997,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1748200007
 Transform:
   m_ObjectHideFlags: 0
@@ -2188,7 +2188,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2079756080
 Transform:
   m_ObjectHideFlags: 0

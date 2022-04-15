@@ -156,7 +156,7 @@ public class Symbiote : MonoBehaviour
 		if (dist <= SnapRadius)
 		{
 			status = Status.SNAPPED;
-			ChangePivot();
+			SwapPivot();
 		}
 	}
 
@@ -194,17 +194,24 @@ public class Symbiote : MonoBehaviour
 	}
 
 	// Change the pivot to be right alligned
-	private void ChangePivot()
+	private void SwapPivot()
 	{
 		// move the pivot to be right aligned
 		Vector3 childPos = child.localPosition;
-		childPos.x = -childPos.x;
 		childPos.y = -childPos.y;
 		child.localPosition = childPos;
 
 		// not only child position has to be changed, the main position
 		// has to be changed as well 
-		transform.position -= transform.up * (child.localScale.y * 2);
+		if(childPos.y > 0)
+		{
+			transform.position -= transform.up * (child.localScale.y * transform.localScale.y);
+		}
+		else
+		{
+			transform.position += transform.up * (child.localScale.y * transform.localScale.y);
+		}
+		
 	}
 
 	// Get the tip of the entire object
