@@ -24,6 +24,9 @@ public class Symbiote : MonoBehaviour
 	[Tooltip("The speed at which the symbiote travels in projectile mode")]
 	[SerializeField] float ProjectileSpeed = 1.0f;
 
+	[Header("Optional")]
+	[SerializeField] bool FollowPlayer = false;
+
 	// The status of the symbiote
 	Status status = Status.NOT_ATTRACTED;
 
@@ -84,11 +87,13 @@ public class Symbiote : MonoBehaviour
 		// if the update process is done... stop anymore updates
 		if (status == Status.DONE)
 		{
+			// if the symbiote collided with the player, collect the burden
 			if (CollidedWithPlayer)
 			{
 				player.GetComponent<MovePlayer>().CollectBurden();
 			}
 
+			// remove self from the manager and destroy the symbiote
 			BurdenManager.Instance.DeleteReference(this);
 			Destroy(gameObject);
 			return;
@@ -97,6 +102,10 @@ public class Symbiote : MonoBehaviour
 		// move towards the player as a projectile
 		if (status == Status.PROJECTILE)
 		{
+			// when requested follow the player, the symbiote will active
+			// adjust it's rotation to follow the player
+			if(FollowPlayer) { LookAtPlayer(); }
+
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
 			transform.position += deltaDistance * -transform.up;
 
