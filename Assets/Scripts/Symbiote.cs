@@ -42,12 +42,9 @@ public class Symbiote : MonoBehaviour
 	// the area of the symbiote
 	float area = 1.0f;
 
-	// how far the projectile should travel
-	float projectileDistance = 0.0f;
-
 	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) playerLOSData;
 
-	MeshRenderer[] rends;
+	bool CollidedWithPlayer = false;
 
 	// Called once at the start of the frame
 	void Start()
@@ -68,9 +65,6 @@ public class Symbiote : MonoBehaviour
 		// calculate the area
 		area = transform.localScale.x * transform.localScale.y;
 
-		// get the renderer from the children
-		rends = GetComponentsInChildren<MeshRenderer>();
-
 		// performing a null check in the editor mode and reporting it
 		#if UNITY_EDITOR
 		if (player == null)
@@ -90,7 +84,11 @@ public class Symbiote : MonoBehaviour
 		// if the update process is done... stop anymore updates
 		if (status == Status.DONE)
 		{
-			player.GetComponent<MovePlayer>().CollectBurden();
+			if (CollidedWithPlayer)
+			{
+				player.GetComponent<MovePlayer>().CollectBurden();
+			}
+
 			BurdenManager.Instance.DeleteReference(this);
 			Destroy(gameObject);
 			return;
@@ -101,12 +99,6 @@ public class Symbiote : MonoBehaviour
 		{
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
 			transform.position += deltaDistance * -transform.up;
-			projectileDistance -= deltaDistance;
-
-			if (projectileDistance <= 0)
-			{
-				status = Status.DONE;
-			}
 
 			return;
 		}
@@ -123,7 +115,6 @@ public class Symbiote : MonoBehaviour
 			if (scale.y <= 1)
 			{
 				status = Status.PROJECTILE;
-				projectileDistance = Vector3.Distance(transform.position, player.position);
 			}
 
 			return;
@@ -163,6 +154,15 @@ public class Symbiote : MonoBehaviour
 	private void FixedUpdate()
 	{
 		playerLOSData = DirectLOSToPlayer();
+	}
+
+	private void OnCollisionEnter(Collision collision)
+	{
+		if(status == Status.PROJECTILE)
+		{
+			status = Status.DONE;
+			CollidedWithPlayer = collision.gameObject.CompareTag("Player");
+		}
 	}
 
 	// Stretch towards the player
@@ -215,6 +215,9 @@ public class Symbiote : MonoBehaviour
 	// set the color of the symbiote
 	public void SetColor(Color color)
 	{
+		// get the mesh renders and set the color values
+		var rends = GetComponentsInChildren<MeshRenderer>();
+
 		// loop through all mesh renderers and set the color
 		foreach (MeshRenderer rend in rends)
 		{
