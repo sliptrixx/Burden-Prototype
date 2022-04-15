@@ -18,6 +18,10 @@ public class Symbiote : MonoBehaviour
 	[Tooltip("The radius at which the root snaps to the player")]
 	[SerializeField] float SnapRadius = 3.0f;
 
+	[Header("Speeds")]
+	[Tooltip("The speed at which the symbiote stretches")]
+	[SerializeField] float StretchSpeed = 40.0f;
+
 	[Tooltip("The speed at which the symbiote shrinks")]
 	[SerializeField] float ShrinkSpeed = 40.0f;
 
@@ -25,6 +29,7 @@ public class Symbiote : MonoBehaviour
 	[SerializeField] float ProjectileSpeed = 1.0f;
 
 	[Header("Optional")]
+	[Tooltip("Should the symbiote follow the player after snapping?")]
 	[SerializeField] bool FollowPlayer = false;
 
 	// The status of the symbiote
@@ -39,15 +44,20 @@ public class Symbiote : MonoBehaviour
 	// A reference to the bottom most child
 	Transform bottom;
 
-	// the default scale of the object on the x-axis
+	// The default scale of the object on the x-axis
 	float scaleRatio = 1.0f;
 
-	// the area of the symbiote
+	// The area of the symbiote
 	float area = 1.0f;
 
+	// A datastructure that stores symbiotes line-of-sight data
 	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) playerLOSData;
 
+	// A flag representing whether the symbiote has hit the player
 	bool CollidedWithPlayer = false;
+
+	// The object that the symbiote is looking at
+	private Transform hitTransform = null;
 
 	// Called once at the start of the frame
 	void Start()
@@ -99,13 +109,14 @@ public class Symbiote : MonoBehaviour
 			return;
 		}
 
-		// move towards the player as a projectile
+		// move as a projectile with the given projectile speed
 		if (status == Status.PROJECTILE)
 		{
 			// when requested follow the player, the symbiote will active
 			// adjust it's rotation to follow the player
 			if(FollowPlayer) { LookAtPlayer(); }
 
+			// move in the direction the symbiote is looking at
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
 			transform.position += deltaDistance * -transform.up;
 
@@ -129,9 +140,11 @@ public class Symbiote : MonoBehaviour
 			return;
 		}
 
+		// the symbiote has to be actively looking at the player
+		LookAtPlayer();
+
 		// check if the symbiote is attracted to the player
 		float dist = Vector3.Distance(transform.position, player.position);
-		LookAtPlayer();
 
 		// update the status based on the distance
 		if (dist <= AttractionRadius && playerLOSData.HitPlayer)
@@ -139,8 +152,19 @@ public class Symbiote : MonoBehaviour
 			status = Status.ATTRACTED;
 		}
 		else 
-		{ 
+		{
 			status = Status.NOT_ATTRACTED;
+
+			// actively retract it's shape to it's default one when it's no
+			// longer being attracted
+			Vector3 scale = transform.localScale;
+			if(scale.y > 1)
+			{
+				scale.y -= ShrinkSpeed * Time.deltaTime;
+				scale.x = area / scale.y;
+				transform.localScale = scale;
+			}
+
 			return;
 		}
 
@@ -162,11 +186,16 @@ public class Symbiote : MonoBehaviour
 
 	private void FixedUpdate()
 	{
+		// physics raycast is being performed, so this code has to be
+		// executed in FixedUpdate
 		playerLOSData = DirectLOSToPlayer();
 	}
 
 	private void OnCollisionEnter(Collision collision)
 	{
+		// Using a flags here to handle changes instead of instantly applying
+		// them because this collision check runs on the physics thread and
+		// can probably cause issues with main update thread
 		if(status == Status.PROJECTILE)
 		{
 			status = Status.DONE;
@@ -177,11 +206,17 @@ public class Symbiote : MonoBehaviour
 	// Stretch towards the player
 	private void StretchTowardsPlayer(float dist)
 	{
+		// calculate the expected stretch value
 		float stretch = dist.Remap(AttractionRadius, SnapRadius, 1, scaleRatio);
-		Vector3 size = transform.localScale;
-		size.x = area / stretch;
-		size.y = stretch;
-		transform.localScale = size;
+		
+		// the expected scale of the object
+		Vector3 scale = transform.localScale;
+		scale.y = stretch;
+		scale.x = area / scale.y;
+
+		// instead of instantly stretching, the symbiote gradually increases
+		// to it's expected scale given by the shrink speed
+		transform.localScale = Vector3.Lerp(transform.localScale, scale, Time.deltaTime * StretchSpeed);
 	}
 
 	// Look at the player
@@ -211,7 +246,6 @@ public class Symbiote : MonoBehaviour
 		{
 			transform.position += transform.up * (child.localScale.y * transform.localScale.y);
 		}
-		
 	}
 
 	// Get the tip of the entire object
@@ -253,6 +287,7 @@ public class Symbiote : MonoBehaviour
 		float expectedY = -baseChild.localScale.y / 2.0f;
 		offset.y = expectedY - currentY;
 
+		// apply offset on all children
 		foreach (Transform child in transform)
 		{
 			child.localPosition += offset;
@@ -267,12 +302,12 @@ public class Symbiote : MonoBehaviour
 		isDebugDrawActive = !isDebugDrawActive;
 	}
 
-	private Transform hitTransform = null;
 	private Vector3 debugTextOffset = new Vector3(1, -0.5f, 0);
 	private void OnDrawGizmos()
 	{
 		if (!isDebugDrawActive) { return; }
 
+		// Debug stuff drawn when not in play mode to visualize different values
 		if(!Application.isPlaying)
 		{
 			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
@@ -282,8 +317,11 @@ public class Symbiote : MonoBehaviour
 			return;
 		}
 
+		// sanity check
 		if(player == null) { return; }
 
+		// when the player is in the line-of-sight of the symbiote, it will draw all elements
+		// else we only draw a line representing which object the symbiote looks at
 		if(playerLOSData.HitPlayer)
 		{
 			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
@@ -295,6 +333,7 @@ public class Symbiote : MonoBehaviour
 			Debug.DrawLine(transform.position, playerLOSData.HitPoint, Color.green);
 		}
 
+		// Additional useful debug texts to figure out any potential issues
 		float playerDist = Vector3.Distance(transform.position, player.position);
 		float scale = Vector3.Distance(transform.position, GetTip());
 
@@ -347,16 +386,15 @@ public class Symbiote : MonoBehaviour
 	// check if there's any other object between the symbiote and the player
 	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) DirectLOSToPlayer()
 	{
+		// perfrom a physics raycast from the tip of the symbiote in the
+		// direction it's looking at to see if the player is in direct line
+		// of sight
 		RaycastHit hit;
 		if(Physics.Raycast(GetTip(), -transform.up, out hit))
 		{
 			hitTransform = hit.transform;
-			if(hit.transform.CompareTag("Player"))
-			{
-				return (true, true, hit.point);
-			}
-
-			return (true, false, hit.point);
+			bool hitPlayer = hit.transform.CompareTag("Player");
+			return (true, hitPlayer, hit.point);
 		}
 
 		hitTransform = null;
@@ -394,6 +432,7 @@ public class SymbioteEditor : Editor
 			symbiote.FixChildrenPivot();
 		}
 
+		// draw a button to toggle debug draw feature
 		GUILayout.Space(5);
 		if(GUILayout.Button("Toggle debug draw", GUILayout.Height(25)))
 		{

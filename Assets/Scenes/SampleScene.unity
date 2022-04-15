@@ -268,7 +268,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 2
+  StretchSpeed: 10
+  ShrinkSpeed: 5
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &326936283
@@ -432,7 +433,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 2
+  StretchSpeed: 10
+  ShrinkSpeed: 5
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &497088233
@@ -1010,7 +1012,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 2
+  StretchSpeed: 10
+  ShrinkSpeed: 5
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &739811212
@@ -1572,7 +1575,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 2
+  StretchSpeed: 10
+  ShrinkSpeed: 5
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &1162772197
@@ -1752,7 +1756,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.75
   SnapRadius: 6
-  ShrinkSpeed: 2
+  StretchSpeed: 10
+  ShrinkSpeed: 5
   ProjectileSpeed: 2
   FollowPlayer: 1
 --- !u!4 &1278651928
