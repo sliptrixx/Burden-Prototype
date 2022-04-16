@@ -32,6 +32,9 @@ public class Symbiote : MonoBehaviour
 	[Tooltip("Should the symbiote follow the player after snapping?")]
 	[SerializeField] bool FollowPlayer = false;
 
+	[Tooltip("Should the symbiote ignore collision with self")]
+	[SerializeField] bool IgnoreSelf = false;
+
 	// The status of the symbiote
 	Status status = Status.NOT_ATTRACTED;
 
@@ -84,6 +87,16 @@ public class Symbiote : MonoBehaviour
 		{
 			Debug.LogWarning("Player not found in the scene. Exiting play mode.");
 			EditorApplication.ExitPlaymode();
+		}
+
+		// making sure that the symbiote isn't Untagged when asked to ignore
+		// collision with self
+		if(IgnoreSelf && CompareTag("Untagged"))
+		{
+			Debug.LogError("Requested ignore self but the object is Untagged. " +
+				"Please add a tag to it. Exiting playmode.");
+			EditorApplication.ExitPlaymode();
+
 		}
 		#endif
 
@@ -193,6 +206,11 @@ public class Symbiote : MonoBehaviour
 
 	private void OnCollisionEnter(Collision collision)
 	{
+		if (IgnoreSelf && collision.gameObject.CompareTag(tag))
+		{
+			return;
+		}
+
 		// Using a flags here to handle changes instead of instantly applying
 		// them because this collision check runs on the physics thread and
 		// can probably cause issues with main update thread
