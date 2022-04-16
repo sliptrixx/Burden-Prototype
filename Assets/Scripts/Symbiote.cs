@@ -127,7 +127,7 @@ public class Symbiote : MonoBehaviour
 		{
 			// when requested follow the player, the symbiote will active
 			// adjust it's rotation to follow the player
-			if(FollowPlayer) { LookAtPlayer(); }
+			if (FollowPlayer) { LookAtPlayer(); }
 
 			// move in the direction the symbiote is looking at
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
@@ -145,6 +145,13 @@ public class Symbiote : MonoBehaviour
 			scale.x = area / scale.y;
 			transform.localScale = scale;
 
+			// also move the player
+			float deltaDistance = ProjectileSpeed * Time.deltaTime;
+			//transform.position -= deltaDistance * transform.up;
+			transform.position -= deltaDistance * transform.position.Direction(player.position);
+
+			// when the scale has returned backed to normal,
+			// don't shrink any further
 			if (scale.y <= 1)
 			{
 				status = Status.PROJECTILE;
@@ -163,6 +170,7 @@ public class Symbiote : MonoBehaviour
 		if (dist <= AttractionRadius && playerLOSData.HitPlayer)
 		{
 			status = Status.ATTRACTED;
+			StretchTowardsPlayer(dist);
 		}
 		else 
 		{
@@ -179,13 +187,6 @@ public class Symbiote : MonoBehaviour
 			}
 
 			return;
-		}
-
-		// if the symbiote is attracted, update the transform accordingly
-		if (status == Status.ATTRACTED)
-		{
-			// set the scale to the stretch value
-			StretchTowardsPlayer(dist);
 		}
 
 		// once the symbiot has touched the player, set a flag that the
