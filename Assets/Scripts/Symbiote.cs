@@ -207,6 +207,18 @@ public class Symbiote : MonoBehaviour
 
 	private void OnCollisionEnter(Collision collision)
 	{
+		HandleCollision(collision);
+	}
+
+	private void OnCollisionStay(Collision collision)
+	{
+		// Doing this on collision stay as well to handle some weird edge cases
+		HandleCollision(collision);
+	}
+
+	// A function to handle collision
+	private void HandleCollision(Collision collision)
+	{
 		if (IgnoreSelf && collision.gameObject.CompareTag(tag))
 		{
 			return;
@@ -215,7 +227,7 @@ public class Symbiote : MonoBehaviour
 		// Using a flags here to handle changes instead of instantly applying
 		// them because this collision check runs on the physics thread and
 		// can probably cause issues with main update thread
-		if(status == Status.PROJECTILE)
+		if (status == Status.PROJECTILE || status == Status.SNAPPED)
 		{
 			status = Status.DONE;
 			CollidedWithPlayer = collision.gameObject.CompareTag("Player");
