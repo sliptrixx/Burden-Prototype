@@ -22,8 +22,8 @@ public static class Extensions
 		return -value.up;
 	}
 
-	public static Vector3 Direction(this Vector3 value, Vector3 to)
+	public static Vector3 Direction(this Vector3 from, Vector3 to)
 	{
-		return (value - to).normalized;
+		return (to - from).normalized;
 	}
 }

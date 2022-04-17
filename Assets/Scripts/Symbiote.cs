@@ -101,7 +101,7 @@ public class Symbiote : MonoBehaviour
 		#endif
 
 		// Start with orienting the player... why? due to pivot reasons
-		LookAtPlayer();
+		//LookAtPlayer();
 	}
 
 	// Called once per frame
@@ -148,7 +148,7 @@ public class Symbiote : MonoBehaviour
 			// also move the player
 			float deltaDistance = ProjectileSpeed * Time.deltaTime;
 			//transform.position -= deltaDistance * transform.up;
-			transform.position -= deltaDistance * transform.position.Direction(player.position);
+			transform.position += deltaDistance * transform.position.Direction(player.position);
 
 			// when the scale has returned backed to normal,
 			// don't shrink any further
@@ -161,7 +161,7 @@ public class Symbiote : MonoBehaviour
 		}
 
 		// the symbiote has to be actively looking at the player
-		LookAtPlayer();
+		
 
 		// check if the symbiote is attracted to the player
 		float dist = Vector3.Distance(transform.position, player.position);
@@ -170,6 +170,8 @@ public class Symbiote : MonoBehaviour
 		if (dist <= AttractionRadius && playerLOSData.HitPlayer)
 		{
 			status = Status.ATTRACTED;
+			
+			LookAtPlayer();
 			StretchTowardsPlayer(dist);
 		}
 		else 
@@ -306,6 +308,58 @@ public class Symbiote : MonoBehaviour
 		}
 	}
 
+	// function that finds the bottom most child
+	private Transform FindBottomMostChild()
+	{
+		// initialize the return value
+		Transform ret = null;
+
+		// Get all children transforms and remove self from this list
+		List<Transform> transforms = GetComponentsInChildren<Transform>().ToList();
+		transforms.Remove(transform);
+
+		// if it has at least one, we set the first value as the default
+		// return value
+		if (transforms.Count > 0)
+		{
+			ret = transforms[0];
+		}
+
+		// now loop through the rest of the transforms to find the child transform
+		// with the smallest tip
+		foreach (Transform obj in transforms)
+		{
+			if (GetTip(ret).y > GetTip(obj).y)
+			{
+				ret = obj;
+			}
+		}
+
+		return ret;
+	}
+
+	// check if there's any other object between the symbiote and the player
+	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) DirectLOSToPlayer()
+	{
+		// calculate the tip and direction to the player from the tip
+		Vector3 tip = GetTip();
+		Vector3 dir = tip.Direction(player.position);
+
+		// perfrom a physics raycast from the tip of the symbiote in the
+		// direction it should be looking at to see if the player is in direct
+		// line of sight
+		RaycastHit hit;
+		if (Physics.Raycast(tip, dir, out hit))
+		{
+			hitTransform = hit.transform;
+			bool hitPlayer = hit.transform.CompareTag("Player");
+			return (true, hitPlayer, hit.point);
+		}
+
+		hitTransform = null;
+		return (false, false, Vector3.zero);
+	}
+
 	// fixes the pivots of the children
 	public void FixChildrenPivot()
 	{
@@ -353,7 +407,7 @@ public class Symbiote : MonoBehaviour
 
 		// when the player is in the line-of-sight of the symbiote, it will draw all elements
 		// else we only draw a line representing which object the symbiote looks at
-		if(playerLOSData.HitPlayer)
+		if (playerLOSData.HitPlayer)
 		{
 			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
 			Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
@@ -377,60 +431,12 @@ public class Symbiote : MonoBehaviour
 		Handles.Label(transform.position + debugTextOffset,
 			$"Distance From Player: {playerDist}\n" +
 			$"Local Scale: {transform.localScale.y}\n" +
-			$"Ratio: {scaleRatio}\n" +
+			$"Expected Size: {scaleRatio}\n" +
 			$"Size: {scale}\n" +
 			$"Object Hit: {hitName}");
 	}
 
 	#endif
-
-	// function that finds the bottom most child
-	private Transform FindBottomMostChild()
-	{
-		// initialize the return value
-		Transform ret = null;
-
-		// Get all children transforms and remove self from this list
-		List<Transform> transforms = GetComponentsInChildren<Transform>().ToList();
-		transforms.Remove(transform);
-
-		// if it has at least one, we set the first value as the default
-		// return value
-		if (transforms.Count > 0)
-		{
-			ret = transforms[0];
-		}
-
-		// now loop through the rest of the transforms to find the child transform
-		// with the smallest tip
-		foreach (Transform obj in transforms)
-		{
-			if (GetTip(ret).y > GetTip(obj).y)
-			{
-				ret = obj;
-			}
-		}
-
-		return ret;
-	}
-
-	// check if there's any other object between the symbiote and the player
-	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) DirectLOSToPlayer()
-	{
-		// perfrom a physics raycast from the tip of the symbiote in the
-		// direction it's looking at to see if the player is in direct line
-		// of sight
-		RaycastHit hit;
-		if(Physics.Raycast(GetTip(), -transform.up, out hit))
-		{
-			hitTransform = hit.transform;
-			bool hitPlayer = hit.transform.CompareTag("Player");
-			return (true, hitPlayer, hit.point);
-		}
-
-		hitTransform = null;
-		return (false, false, Vector3.zero);
-	}
 
 	// The status of the symbiote
 	public enum Status
