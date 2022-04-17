@@ -728,6 +728,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -799,6 +801,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -870,6 +874,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -1016,7 +1022,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 504023566}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.32, y: -3.42, z: 0}
+  m_LocalPosition: {x: -0.32, y: -4.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1262,6 +1268,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -1428,6 +1436,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -1687,6 +1697,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -2077,6 +2089,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -2243,6 +2257,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -2505,6 +2521,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -180
+  MaxAngle: 180
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2
@@ -3109,7 +3127,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1630129093}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -1.81, z: 0}
   m_LocalScale: {x: 7.5, y: 1, z: 3.15}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3833,6 +3851,8 @@ MonoBehaviour:
   AttractionRadius: 10
   MaxSize: 3.73
   SnapRadius: 5.16
+  MinAngle: -20
+  MaxAngle: 20
   StretchSpeed: 10
   ShrinkSpeed: 5
   ProjectileSpeed: 2

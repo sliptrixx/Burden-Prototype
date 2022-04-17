@@ -18,6 +18,13 @@ public class Symbiote : MonoBehaviour
 	[Tooltip("The radius at which the root snaps to the player")]
 	[SerializeField] float SnapRadius = 3.0f;
 
+	[Header("Angles")]
+	[Tooltip("The minimum angle of rotation")]
+	[SerializeField] [Range(-180, 0)] float MinAngle = -180;
+
+	[Tooltip("The maximum angle of rotation")]
+	[SerializeField] [Range(0, 180)] float MaxAngle = 180; 
+
 	[Header("Speeds")]
 	[Tooltip("The speed at which the symbiote stretches")]
 	[SerializeField] float StretchSpeed = 40.0f;
@@ -54,13 +61,16 @@ public class Symbiote : MonoBehaviour
 	float area = 1.0f;
 
 	// A datastructure that stores symbiotes line-of-sight data
-	private (bool HitSomething, bool HitPlayer, Vector3 HitPoint) playerLOSData;
+	(bool HitSomething, bool HitPlayer, Vector3 HitPoint) playerLOSData;
 
 	// A flag representing whether the symbiote has hit the player
 	bool CollidedWithPlayer = false;
 
 	// The object that the symbiote is looking at
-	private Transform hitTransform = null;
+	Transform hitTransform = null;
+
+	// The initial rotation value
+	Vector3 initialRotation = default;
 
 	// Called once at the start of the frame
 	void Start()
@@ -73,6 +83,9 @@ public class Symbiote : MonoBehaviour
 
 		// find the bottom most child
 		bottom = FindBottomMostChild();
+
+		// store initial rotation value
+		initialRotation = -transform.up;
 
 		// calculate the default scale and the ratio
 		float defaultScale = Vector3.Distance(transform.position, GetTip());
@@ -99,9 +112,6 @@ public class Symbiote : MonoBehaviour
 
 		}
 		#endif
-
-		// Start with orienting the player... why? due to pivot reasons
-		//LookAtPlayer();
 	}
 
 	// Called once per frame
@@ -160,28 +170,25 @@ public class Symbiote : MonoBehaviour
 			return;
 		}
 
-		// the symbiote has to be actively looking at the player
-		
-
 		// check if the symbiote is attracted to the player
 		float dist = Vector3.Distance(transform.position, player.position);
 
 		// update the status based on the distance
-		if (dist <= AttractionRadius && playerLOSData.HitPlayer)
+		if (dist <= AttractionRadius && playerLOSData.HitPlayer && CheckAngleLimits())
 		{
 			status = Status.ATTRACTED;
-			
+
 			LookAtPlayer();
 			StretchTowardsPlayer(dist);
 		}
-		else 
+		else
 		{
 			status = Status.NOT_ATTRACTED;
 
 			// actively retract it's shape to it's default one when it's no
 			// longer being attracted
 			Vector3 scale = transform.localScale;
-			if(scale.y > 1)
+			if (scale.y > 1)
 			{
 				scale.y -= ShrinkSpeed * Time.deltaTime;
 				scale.x = area / scale.y;
@@ -360,6 +367,16 @@ public class Symbiote : MonoBehaviour
 		return (false, false, Vector3.zero);
 	}
 
+	// check if the angle of rotation is within the range of rotation
+	private bool CheckAngleLimits()
+	{
+		Vector3 tip = GetTip();
+		Vector3 dir = tip.Direction(player.position);
+		float rot = Vector3.SignedAngle(initialRotation, dir, Vector3.forward);
+
+		return rot >= MinAngle && rot <= MaxAngle;
+	}
+
 	// fixes the pivots of the children
 	public void FixChildrenPivot()
 	{
@@ -393,8 +410,13 @@ public class Symbiote : MonoBehaviour
 		if (!isDebugDrawActive) { return; }
 
 		// Debug stuff drawn when not in play mode to visualize different values
-		if(!Application.isPlaying)
+		if (!Application.isPlaying)
 		{
+			// Helpful angle of rotation stuff
+			Debug.DrawRay(transform.position, Quaternion.Euler(0, 0, MinAngle) * -transform.up * AttractionRadius, Color.gray);
+			Debug.DrawRay(transform.position, Quaternion.Euler(0, 0, MaxAngle) * -transform.up * AttractionRadius, Color.gray);
+
+			// different radius information
 			Debug.DrawRay(transform.position, -transform.up * AttractionRadius, Color.green);
 			Debug.DrawRay(transform.position, -transform.up * SnapRadius, Color.blue);
 			Debug.DrawRay(transform.position, -transform.up * MaxSize, Color.red);
@@ -418,9 +440,12 @@ public class Symbiote : MonoBehaviour
 			Debug.DrawLine(transform.position, playerLOSData.HitPoint, Color.green);
 		}
 
+		// Helpful angle of rotation stuff
+		Debug.DrawRay(transform.position, Quaternion.Euler(0, 0, MinAngle) * initialRotation * AttractionRadius, Color.gray);
+		Debug.DrawRay(transform.position, Quaternion.Euler(0, 0, MaxAngle) * initialRotation * AttractionRadius, Color.gray);
+
 		// Additional useful debug texts to figure out any potential issues
 		float playerDist = Vector3.Distance(transform.position, player.position);
-		float scale = Vector3.Distance(transform.position, GetTip());
 
 		Vector3 debugTip = GetTip();
 		Debug.DrawLine(transform.position, GetTip(), Color.magenta);
@@ -431,8 +456,6 @@ public class Symbiote : MonoBehaviour
 		Handles.Label(transform.position + debugTextOffset,
 			$"Distance From Player: {playerDist}\n" +
 			$"Local Scale: {transform.localScale.y}\n" +
-			$"Expected Size: {scaleRatio}\n" +
-			$"Size: {scale}\n" +
 			$"Object Hit: {hitName}");
 	}
 
